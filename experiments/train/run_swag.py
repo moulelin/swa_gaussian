@@ -1,3 +1,14 @@
+import sys
+
+# 添加当前目录
+sys.path.append('.')
+
+# 添加上层目录
+sys.path.append('..')
+
+# 添加上上层目录
+sys.path.append('../../')
+
 import argparse
 import os, sys
 import time
