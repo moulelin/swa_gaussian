@@ -83,7 +83,7 @@ parser.add_argument(
 parser.add_argument(
     "--epochs",
     type=int,
-    default=200,
+    default=300,
     metavar="N",
     help="number of epochs to train (default: 200)",
 )
@@ -171,7 +171,7 @@ args.device = None
 use_cuda = torch.cuda.is_available()
 
 if use_cuda:
-    args.device = torch.device("cuda")
+    args.device = torch.device("cuda:1")
 else:
     args.device = torch.device("cpu")
 
