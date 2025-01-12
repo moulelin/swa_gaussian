@@ -271,8 +271,6 @@ if args.swa and args.swa_resume is not None:
     )
     swag_model.to(args.device)
     swag_model.load_state_dict(checkpoint["state_dict"])
-    print("有啊")
-input()
 
 columns = ["ep", "lr", "tr_loss", "tr_acc", "te_loss", "te_acc", "time", "mem_usage"]
 if args.swa:
@@ -378,6 +376,8 @@ for epoch in range(start_epoch, args.epochs):
         table = "\n".join([table[1]] + table)
     else:
         table = table.split("\n")[2]
+    with open("training_log.txt", "a") as f:
+        f.write(table + "\n")
     print(table)
 
 if args.epochs % args.save_freq != 0:
