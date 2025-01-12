@@ -9,7 +9,7 @@ import tqdm
 
 import torch.nn.functional as F
 
-
+device = torch.device("cuda:1" if torch.cuda.is_available() else "cpu")
 def flatten(lst):
     tmp = [i.contiguous().view(-1, 1) for i in lst]
     return torch.cat(tmp).view(-1)
@@ -74,8 +74,8 @@ def train_epoch(
 
     for i, (input, target) in enumerate(loader):
         if cuda:
-            input = input.cuda(non_blocking=True)
-            target = target.cuda(non_blocking=True)
+            input = input.to(device, non_blocking=True)
+            target = target.to(device, non_blocking=True)
 
         loss, output = criterion(model, input, target)
 
@@ -120,8 +120,8 @@ def eval(loader, model, criterion, cuda=True, regression=False, verbose=False):
             loader = tqdm.tqdm(loader)
         for i, (input, target) in enumerate(loader):
             if cuda:
-                input = input.cuda(non_blocking=True)
-                target = target.cuda(non_blocking=True)
+                input = input.to(device, non_blocking=True)
+                target = target.to(device, non_blocking=True)
 
             loss, output = criterion(model, input, target)
 
@@ -149,7 +149,7 @@ def predict(loader, model, verbose=False):
     offset = 0
     with torch.no_grad():
         for input, target in loader:
-            input = input.cuda(non_blocking=True)
+            input = input.to(device, non_blocking=True)
             output = model(input)
 
             batch_size = input.size(0)
@@ -221,7 +221,7 @@ def bn_update(loader, model, verbose=False, subset=None, **kwargs):
 
             loader = tqdm.tqdm(loader, total=num_batches)
         for input, _ in loader:
-            input = input.cuda(non_blocking=True)
+            input = input.to(device, non_blocking=True)
             input_var = torch.autograd.Variable(input)
             b = input_var.data.size(0)
 
@@ -248,7 +248,7 @@ def predictions(test_loader, model, seed=None, cuda=True, regression=False, **kw
         if seed is not None:
             torch.manual_seed(seed)
         if cuda:
-            input = input.cuda(non_blocking=True)
+            input = input.to(device, non_blocking=True)
         output = model(input, **kwargs)
         if regression:
             preds.append(output.cpu().data.numpy())
