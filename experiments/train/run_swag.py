@@ -376,7 +376,7 @@ for epoch in range(start_epoch, args.epochs):
         table = "\n".join([table[1]] + table)
     else:
         table = table.split("\n")[2]
-    with open("training_log.txt", "a") as f:
+    with open("training_log_300.txt", "a") as f:
         f.write(table + "\n")
     print(table)
 
