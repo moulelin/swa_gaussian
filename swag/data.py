@@ -213,7 +213,7 @@ def loaders(
         # delattr(test_set, 'data')
         # delattr(test_set, 'targets')
     else:
-        print("You are going to run models on the test set. Are you sure?")
+        # print("You are going to run models on the test set. Are you sure?")
         if dataset == "STL10":
             test_set = ds(
                 root=path, split="test", download=True, transform=transform_test
