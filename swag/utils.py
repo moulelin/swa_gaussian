@@ -45,7 +45,8 @@ def save_checkpoint(dir, epoch, name="checkpoint", **kwargs):
     filepath = os.path.join(dir, "%s-%d.pt" % (name, epoch))
     torch.save(state, filepath)
 
-
+def is_train_loader(loader):
+    return getattr(loader.dataset, 'train', False)
 def train_epoch(
     loader,
     model,
@@ -73,6 +74,11 @@ def train_epoch(
         loader = tqdm.tqdm(loader, total=num_batches)
 
     for i, (input, target) in enumerate(loader):
+        if is_train_loader(loader):
+            print(f"当前 DataLoader 是训练集，批次索引: {i}")
+        else:
+            print(f"当前 DataLoader 是测试集，批次索引: {i}")
+        input()
         if cuda:
             input = input.to(device, non_blocking=True)
             target = target.to(device, non_blocking=True)
