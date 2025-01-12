@@ -26,7 +26,7 @@ parser = argparse.ArgumentParser(description="SGD/SWA training")
 parser.add_argument(
     "--dir",
     type=str,
-    default="checkpoint",
+    default="checkpoint_300",
     required=False,
     help="training directory (default: None)",
 )
