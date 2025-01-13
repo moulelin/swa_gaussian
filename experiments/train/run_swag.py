@@ -171,7 +171,7 @@ args.device = None
 use_cuda = torch.cuda.is_available()
 
 if use_cuda:
-    args.device = torch.device("cuda:1")
+    args.device = torch.device("cuda:0")
 else:
     args.device = torch.device("cpu")
 
