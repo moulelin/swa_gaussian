@@ -121,6 +121,7 @@ class SWAG(torch.nn.Module):
         var_sample = var.sqrt() * torch.randn_like(var, requires_grad=False)
 
         # if covariance draw low rank sample
+        print("让我瞅瞅")
         if cov:
             cov_mat_sqrt = torch.cat(cov_mat_sqrt_list, dim=1)
 
@@ -132,9 +133,11 @@ class SWAG(torch.nn.Module):
             cov_sample /= (self.max_num_models - 1) ** 0.5
 
             rand_sample = var_sample + cov_sample
+            print("有方差哦")
         else:
             rand_sample = var_sample
-
+            print("没有")
+        input()
         # update sample with mean and scale
         sample = mean + scale_sqrt * rand_sample
         sample = sample.unsqueeze(0)

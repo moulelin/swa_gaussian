@@ -26,7 +26,7 @@ parser = argparse.ArgumentParser(description="SGD/SWA training")
 parser.add_argument(
     "--dir",
     type=str,
-    default="checkpoint_300",
+    default="checkpoint_300_test",
     required=False,
     help="training directory (default: None)",
 )
@@ -123,7 +123,7 @@ parser.add_argument("--swa", default='True', help="swa usage flag (default: on)"
 parser.add_argument(
     "--swa_start",
     type=float,
-    default=161,
+    default=1,
     metavar="N",
     help="SWA start epoch number (default: 161)",
 )
@@ -171,7 +171,7 @@ args.device = None
 use_cuda = torch.cuda.is_available()
 
 if use_cuda:
-    args.device = torch.device("cuda:0")
+    args.device = torch.device("cuda:1")
 else:
     args.device = torch.device("cpu")
 
@@ -287,7 +287,8 @@ utils.save_checkpoint(
 sgd_ens_preds = None
 sgd_targets = None
 n_ensembled = 0.0
-
+accuracy_best = 0.0
+accuracy_sgd_best = 0.0
 for epoch in range(start_epoch, args.epochs):
     time_ep = time.time()
 
@@ -309,8 +310,16 @@ for epoch in range(start_epoch, args.epochs):
     ):
         test_res = utils.eval(loaders["test"], model, criterion, cuda=use_cuda)
     else:
-        test_res = {"loss": None, "accuracy": None}
-
+        test_res = {"loss": None, "accuracy": 0.0}
+    if test_res["accuracy"] > accuracy_sgd_best:
+        accuracy_sgd_best = test_res["accuracy"]
+        utils.save_checkpoint(
+            args.dir,
+            epoch + 1,
+            state_dict=model.state_dict(),
+            optimizer=optimizer.state_dict(),
+        )
+    # swag_model.sample(0.0)
     if (
         args.swa
         and (epoch + 1) > args.swa_start
@@ -339,19 +348,24 @@ for epoch in range(start_epoch, args.epochs):
             utils.bn_update(loaders["train"], swag_model)
             swag_res = utils.eval(loaders["test"], swag_model, criterion)
         else:
-            swag_res = {"loss": None, "accuracy": None}
-
-    if (epoch + 1) % args.save_freq == 0:
-        utils.save_checkpoint(
-            args.dir,
-            epoch + 1,
-            state_dict=model.state_dict(),
-            optimizer=optimizer.state_dict(),
-        )
-        if args.swa:
+            swag_res = {"loss": None, "accuracy": 0.0}
+        if swag_res["accuracy"] > accuracy_best:
+            accuracy_best = swag_res["accuracy"]
             utils.save_checkpoint(
-                args.dir, epoch + 1, name="swag", state_dict=swag_model.state_dict()
+                args.dir, epoch + 1, name=f"swag-{accuracy_best}", state_dict=swag_model.state_dict()
             )
+
+    # if (epoch + 1) % args.save_freq == 0:
+    #     utils.save_checkpoint(
+    #         args.dir,
+    #         epoch + 1,
+    #         state_dict=model.state_dict(),
+    #         optimizer=optimizer.state_dict(),
+    #     )
+    #     if args.swa:
+    #         utils.save_checkpoint(
+    #             args.dir, epoch + 1, name="swag", state_dict=swag_model.state_dict()
+    #         )
 
     time_ep = time.time() - time_ep
     
@@ -380,7 +394,7 @@ for epoch in range(start_epoch, args.epochs):
         f.write(table + "\n")
     print(table)
 
-if args.epochs % args.save_freq != 0:
+if args.epochs:
     utils.save_checkpoint(
         args.dir,
         args.epochs,
