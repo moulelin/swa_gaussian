@@ -136,7 +136,7 @@ elif args.method in ["SGD", "Dropout", "KFACLaplace"]:
     model = model_cfg.base(*model_cfg.args, num_classes=num_classes, **model_cfg.kwargs)
 else:
     assert False
-model.cuda()
+# model.cuda()
 
 
 def train_dropout(m):
@@ -145,9 +145,13 @@ def train_dropout(m):
 
 
 print("Loading model %s" % args.file)
-checkpoint = torch.load(args.file)
-model.load_state_dict(checkpoint["state_dict"])
+# checkpoint = torch.load(args.file)
+# model.load_state_dict(checkpoint["state_dict"])
+checkpoint = torch.load(args.file, map_location='cpu')
 
+# 加载模型的状态字典
+model.load_state_dict(checkpoint['state_dict'])
+model.cuda()
 if args.method == "KFACLaplace":
     print(len(loaders["train"].dataset))
     model = KFACLaplace(
