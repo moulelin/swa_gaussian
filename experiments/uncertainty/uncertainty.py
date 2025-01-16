@@ -1,4 +1,12 @@
 import argparse
+import sys
+sys.path.append('.')
+
+# 添加上层目录
+sys.path.append('..')
+
+# 添加上上层目录
+sys.path.append('../../')
 import torch
 import torch.nn.functional as F
 import numpy as np
