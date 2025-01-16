@@ -137,7 +137,7 @@ class SWAG(torch.nn.Module):
         else:
             rand_sample = var_sample
             print("没有")
-        input()
+        # input()
         # update sample with mean and scale
         sample = mean + scale_sqrt * rand_sample
         sample = sample.unsqueeze(0)
