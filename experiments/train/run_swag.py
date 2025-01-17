@@ -104,7 +104,7 @@ parser.add_argument(
 parser.add_argument(
     "--lr_init",
     type=float,
-    default=0.01,
+    default=0.1,
     metavar="LR",
     help="initial learning rate (default: 0.01)",
 )
@@ -116,19 +116,19 @@ parser.add_argument(
     help="SGD momentum (default: 0.9)",
 )
 parser.add_argument(
-    "--wd", type=float, default=1e-4, help="weight decay (default: 1e-4)"
+    "--wd", type=float, default=5e-4, help="weight decay (default: 1e-4)"
 )
 
-parser.add_argument("--swa", default='True', help="swa usage flag (default: on)")
+parser.add_argument("--swa", action="store_true", help="swa usage flag (default: off)")
 parser.add_argument(
     "--swa_start",
-    type=float,
-    default=1,
+    type=int,
+    default=161,
     metavar="N",
     help="SWA start epoch number (default: 161)",
 )
 parser.add_argument(
-    "--swa_lr", type=float, default=0.02, metavar="LR", help="SWA LR (default: 0.02)"
+    "--swa_lr", type=float, default=0.01, metavar="LR", help="SWA LR (default: 0.02)"
 )
 parser.add_argument(
     "--swa_c_epochs",
@@ -230,13 +230,43 @@ else:
 def schedule(epoch):
     t = (epoch) / (args.swa_start if args.swa else args.epochs)
     lr_ratio = args.swa_lr / args.lr_init if args.swa else 0.01
-    if t <= 0.5:
+    if t <= 0.2:
         factor = 1.0
     elif t <= 0.9:
         factor = 1.0 - (1.0 - lr_ratio) * (t - 0.5) / 0.4
     else:
         factor = lr_ratio
     return args.lr_init * factor
+def schedule2(epoch):
+    """
+    根据当前 epoch 返回对应的学习率。
+
+    参数:
+        epoch (int): 当前的训练 epoch（从 0 开始）。
+
+    返回:
+        float: 当前 epoch 对应的学习率。
+    """
+    if 0 <= epoch <= 60:
+        return 0.1
+    elif 61 <= epoch <= 120:
+        print("LR change to 0.02")
+        return 0.02
+    elif 121 <= epoch <= 160:
+        print("LR change to 0.004")
+        return 0.004
+    elif 161 <= epoch <= 200:
+        print("LR change to 0.0008")
+        return 0.0008
+    elif 201 <= epoch <= 250:
+        print("LR change to 0.00016")
+        return 0.00016
+    elif 251 <= epoch <= 300:
+        print("LR change to 0.000032")
+        return 0.000032
+    else:
+        # 如果 epoch 超出预定范围，可以选择保持最后一个学习率或抛出异常
+        return 0.000032  # 或者 raise ValueError(f"Epoch {epoch} is out of the predefined schedule range.")
 
 
 # use a slightly modified loss function that allows input of model
@@ -293,7 +323,7 @@ for epoch in range(start_epoch, args.epochs):
     time_ep = time.time()
 
     if not args.no_schedule:
-        lr = schedule(epoch)
+        lr = schedule2(epoch)
         utils.adjust_learning_rate(optimizer, lr)
     else:
         lr = args.lr_init
@@ -302,13 +332,16 @@ for epoch in range(start_epoch, args.epochs):
         train_res = utils.train_epoch(loaders["train"], model, criterion, optimizer, cuda=use_cuda)
     else:
         train_res = utils.train_epoch(loaders["train"], model, criterion, optimizer, cuda=use_cuda)
-
+    # label
     if (
         epoch == 0
         or epoch % args.eval_freq == args.eval_freq - 1
         or epoch == args.epochs - 1
     ):
         test_res = utils.eval(loaders["test"], model, criterion, cuda=use_cuda)
+        print("--" * 5)
+        print(f"Accuracy {test_res['accuracy']}")
+        print("--"*5)
     else:
         test_res = {"loss": None, "accuracy": 0.0}
     if test_res["accuracy"] > accuracy_sgd_best:
@@ -348,7 +381,7 @@ for epoch in range(start_epoch, args.epochs):
             utils.bn_update(loaders["train"], swag_model)
             swag_res = utils.eval(loaders["test"], swag_model, criterion)
         else:
-            swag_res = {"loss": None, "accuracy": 0.0}
+            swag_res = {"loss": None, "accuracy": None}
         if swag_res["accuracy"] > accuracy_best:
             accuracy_best = swag_res["accuracy"]
             utils.save_checkpoint(

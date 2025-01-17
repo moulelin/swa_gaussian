@@ -82,7 +82,6 @@ parser.add_argument(
     "--seed", type=int, default=1, metavar="S", help="random seed (default: 1)"
 )
 
-
 def nll(outputs, labels):
     labels = labels.astype(int)
     idx = (np.arange(labels.size), labels)
@@ -224,6 +223,7 @@ for i in range(args.N):
     print("Accuracy:", np.mean(np.argmax(predictions, axis=1) == targets))
     #nll is sum over entire dataset
     print("NLL:", nll(predictions / (i + 1), targets))
+
 predictions /= args.N
 
 entropies = -np.sum(np.log(predictions + eps) * predictions, axis=1)

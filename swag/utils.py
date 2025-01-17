@@ -126,20 +126,20 @@ def eval(loader, model, criterion, cuda=True, regression=False, verbose=False):
             loader = tqdm.tqdm(loader)
         for i, (input, target) in enumerate(loader):
             if cuda:
-                input = input.to(device, non_blocking=True)
-                target = target.to(device, non_blocking=True)
+                input = input.to(device)
+                target = target.to(device)
 
             loss, output = criterion(model, input, target)
 
             loss_sum += loss.item() * input.size(0)
 
-            if not regression:
-                pred = output.data.argmax(1, keepdim=True)
-                correct += pred.eq(target.data.view_as(pred)).sum().item()
+            # if not regression:
+            pred = output.data.argmax(1, keepdim=True)
+            correct += pred.eq(target.data.view_as(pred)).sum().item()
 
     return {
         "loss": loss_sum / num_objects_total,
-        "accuracy": None if regression else correct / num_objects_total * 100.0,
+        "accuracy": correct / num_objects_total * 100.0,
     }
 
 
@@ -268,7 +268,7 @@ def predictions(test_loader, model, seed=None, cuda=True, regression=False, **kw
 def schedule(epoch, lr_init, epochs, swa, swa_start=None, swa_lr=None):
     t = (epoch) / (swa_start if swa else epochs)
     lr_ratio = swa_lr / lr_init if swa else 0.01
-    if t <= 0.5:
+    if t <= 0.2:
         factor = 1.0
     elif t <= 0.9:
         factor = 1.0 - (1.0 - lr_ratio) * (t - 0.5) / 0.4
