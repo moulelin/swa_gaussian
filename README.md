@@ -1,3 +1,5 @@
+# command: python experiments/train/run_swag.py --data_path='data' --epochs=300 --dataset=CIFAR100 --save_freq=300 --model=WideResNet28x10 --lr_init=0.1 --wd=5e-4  --swa_start=161 --swa_lr=0.05 --cov_mat --use_test --swa
+
 # A Simple Baseline for Bayesian Deep Learning
 
 This repository contains a PyTorch implementation of Stochastic Weight Averaging-Gaussian (SWAG) from the paper

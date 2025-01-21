@@ -305,7 +305,7 @@ if args.swa and args.swa_resume is not None:
 columns = ["ep", "lr", "tr_loss", "tr_acc", "te_loss", "te_acc", "time", "mem_usage"]
 if args.swa:
     columns = columns[:-2] + ["swa_te_loss", "swa_te_acc"] + columns[-2:]
-    swag_res = {"loss": None, "accuracy": None}
+    swag_res = {"loss": None, "accuracy": 0.0}
 
 utils.save_checkpoint(
     args.dir,
@@ -381,7 +381,7 @@ for epoch in range(start_epoch, args.epochs):
             utils.bn_update(loaders["train"], swag_model)
             swag_res = utils.eval(loaders["test"], swag_model, criterion)
         else:
-            swag_res = {"loss": None, "accuracy": None}
+            swag_res = {"loss": None, "accuracy": 0.0}
         if swag_res["accuracy"] > accuracy_best:
             accuracy_best = swag_res["accuracy"]
             utils.save_checkpoint(
