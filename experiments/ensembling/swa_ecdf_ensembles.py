@@ -9,7 +9,7 @@ import torch.nn.functional as F
 from itertools import chain, product
 
 from swag import data, losses, models, utils
-
+device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 parser = argparse.ArgumentParser(description="SGD/SWA/SWAG ensembling")
 # parser.add_argument('--replications', type=int, default=10, help='number of passes through testing set')
 parser.add_argument(
@@ -129,7 +129,7 @@ loaders, num_classes = data.loaders(
 
 print("Preparing model")
 model = model_cfg.base(*model_cfg.args, num_classes=num_classes, **model_cfg.kwargs)
-model.cuda()
+model.to(device)
 model.eval()
 
 print("using cross-entropy loss")

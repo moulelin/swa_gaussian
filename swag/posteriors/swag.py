@@ -14,7 +14,7 @@ from gpytorch.distributions import MultivariateNormal
 
 from ..utils import flatten, unflatten_like
 
-
+device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 def swag_parameters(module, params, no_cov_mat=True):
     for name in list(module._parameters.keys()):
         if module._parameters[name] is None:
@@ -145,7 +145,7 @@ class SWAG(torch.nn.Module):
         samples_list = unflatten_like(sample, mean_list)
 
         for (module, name), sample in zip(self.params, samples_list):
-            module.__setattr__(name, sample.cuda())
+            module.__setattr__(name, sample.to(device))
 
     def collect_model(self, base_model):
         for (module, name), base_param in zip(self.params, base_model.parameters()):

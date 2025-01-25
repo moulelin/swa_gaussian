@@ -16,6 +16,8 @@ import tqdm
 from swag import data, losses, models, utils
 from swag.posteriors import SWAG, KFACLaplace
 
+device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+
 parser = argparse.ArgumentParser(description="SGD/SWA training")
 parser.add_argument("--file", type=str, default=None, required=True, help="checkpoint")
 
@@ -135,7 +137,7 @@ elif args.method in ["SGD", "Dropout", "KFACLaplace"]:
     model = model_cfg.base(*model_cfg.args, num_classes=num_classes, **model_cfg.kwargs)
 else:
     assert False
-# model.cuda()
+# model.to(device)
 
 
 def train_dropout(m):
@@ -150,7 +152,7 @@ checkpoint = torch.load(args.file, map_location='cpu')
 
 # 加载模型的状态字典
 model.load_state_dict(checkpoint['state_dict'])
-model.cuda()
+model.to(device)
 if args.method == "KFACLaplace":
     print(len(loaders["train"].dataset))
     model = KFACLaplace(

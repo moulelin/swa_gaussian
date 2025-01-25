@@ -21,7 +21,7 @@ import numpy as np
 
 from swag import data, models, utils, losses
 from swag.posteriors import SWAG
-
+device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 parser = argparse.ArgumentParser(description="SGD/SWA training")
 parser.add_argument(
     "--dir",
@@ -238,35 +238,27 @@ def schedule(epoch):
         factor = lr_ratio
     return args.lr_init * factor
 def schedule2(epoch):
-    """
-    根据当前 epoch 返回对应的学习率。
 
-    参数:
-        epoch (int): 当前的训练 epoch（从 0 开始）。
-
-    返回:
-        float: 当前 epoch 对应的学习率。
-    """
     if 0 <= epoch <= 60:
         return 0.1
     elif 61 <= epoch <= 120:
         print("LR change to 0.02")
-        return 0.02
+        return 0.08
     elif 121 <= epoch <= 160:
         print("LR change to 0.004")
-        return 0.004
+        return 0.016
     elif 161 <= epoch <= 200:
         print("LR change to 0.0008")
-        return 0.0008
+        return 0.0032
     elif 201 <= epoch <= 250:
         print("LR change to 0.00016")
-        return 0.00016
+        return 0.0016
     elif 251 <= epoch <= 300:
         print("LR change to 0.000032")
-        return 0.000032
+        return 0.0032
     else:
         # 如果 epoch 超出预定范围，可以选择保持最后一个学习率或抛出异常
-        return 0.000032  # 或者 raise ValueError(f"Epoch {epoch} is out of the predefined schedule range.")
+        return 0.0032  # 或者 raise ValueError(f"Epoch {epoch} is out of the predefined schedule range.")
 
 
 # use a slightly modified loss function that allows input of model

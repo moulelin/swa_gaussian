@@ -21,7 +21,7 @@ import torch.nn.functional as F
 
 from . import imgs as img_utils
 
-
+device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 def weights_init(m):
     if isinstance(m, nn.Conv2d):
         nn.init.kaiming_uniform(m.weight)
@@ -33,8 +33,8 @@ def predict(model, input_loader, n_batches=1):
     predictions = []
     model.eval()
     for input, target in input_loader:
-        data = Variable(input.cuda(), volatile=True)
-        label = Variable(target.cuda())
+        data = Variable(input.to(device), volatile=True)
+        label = Variable(target.to(device))
         output = model(data)
         pred = get_predictions(output)
         predictions.append([input, target, pred])
@@ -43,8 +43,8 @@ def predict(model, input_loader, n_batches=1):
 
 def view_sample_predictions(model, loader, n):
     inputs, targets = next(iter(loader))
-    data = Variable(inputs.cuda(), volatile=True)
-    label = Variable(targets.cuda())
+    data = Variable(inputs.to(device), volatile=True)
+    label = Variable(targets.to(device))
     output = model(data)
     pred = get_predictions(output)
     batch_size = inputs.size(0)

@@ -5,7 +5,7 @@ import time
 
 from ..utils import eval
 
-
+device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 def laplace_parameters(module, params, no_cov_mat=True, max_num_models=0):
     for name in list(module._parameters.keys()):
         if module._parameters[name] is None:
@@ -21,13 +21,13 @@ def laplace_parameters(module, params, no_cov_mat=True, max_num_models=0):
             if int(torch.__version__.split(".")[1]) >= 4:
                 module.register_buffer(
                     "%s_cov_mat_sqrt" % name,
-                    torch.zeros(max_num_models, data.numel()).cuda(),
+                    torch.zeros(max_num_models, data.numel()).to(device),
                 )
             else:
                 module.register_buffer(
                     "%s_cov_mat_sqrt" % name,
                     torch.autograd.Variable(
-                        torch.zeros(max_num_models, data.numel()).cuda()
+                        torch.zeros(max_num_models, data.numel()).to(device)
                     ),
                 )
 
@@ -65,7 +65,7 @@ class Laplace(torch.nn.Module):
             else:
                 cov_mat_sqrt = module.__getattr__("%s_cov_mat_sqrt" % name)
                 eps = (
-                    torch.zeros(cov_mat_sqrt.size(0), 1).normal_().cuda()
+                    torch.zeros(cov_mat_sqrt.size(0), 1).normal_().to(device)
                 )  # rank-deficient normal results
                 # sqrt(max_num_models) scaling comes from covariance matrix
                 w = mean + (
@@ -136,7 +136,7 @@ class Laplace(torch.nn.Module):
             module.__getattr__("%s_var" % name).copy_(var)
 
     def scale_grid_search(
-        self, loader, criterion, logscale_range=torch.arange(-10, 0, 0.5).cuda()
+        self, loader, criterion, logscale_range=torch.arange(-10, 0, 0.5).to(device)
     ):
         all_losses = torch.zeros_like(logscale_range)
         t_s = time.time()

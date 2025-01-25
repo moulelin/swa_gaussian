@@ -10,7 +10,7 @@ from scipy.stats import chi2
 
 torch.backends.cudnn.deterministic = True
 
-
+device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 class Test_SWAG_Sampling(unittest.TestCase):
     def test_swag_cov(self, **kwargs):
         model = torch.nn.Linear(300, 3, bias=True)
@@ -60,9 +60,9 @@ class Test_SWAG_Sampling(unittest.TestCase):
             sq_mean_list.append(sq_mean)
             cov_mat_sqrt_list.append(cov_mat_sqrt)
 
-        mean = flatten(mean_list).cuda()
-        sq_mean = flatten(sq_mean_list).cuda()
-        cov_mat_sqrt = torch.cat(cov_mat_sqrt_list, dim=1).cuda()
+        mean = flatten(mean_list).to(device)
+        sq_mean = flatten(sq_mean_list).to(device)
+        cov_mat_sqrt = torch.cat(cov_mat_sqrt_list, dim=1).to(device)
 
         true_cov_mat = (
             1.0 / (swag_model.max_num_models - 1)
@@ -138,8 +138,8 @@ class Test_SWAG_Sampling(unittest.TestCase):
             mean_list.append(mean)
             sq_mean_list.append(sq_mean)
 
-        mean = flatten(mean_list).cuda()
-        sq_mean = flatten(sq_mean_list).cuda()
+        mean = flatten(mean_list).to(device)
+        sq_mean = flatten(sq_mean_list).to(device)
 
         for scale in [0.01, 0.1, 0.5, 1.0, 2.0, 5.0]:
             var = scale * (sq_mean - mean ** 2)

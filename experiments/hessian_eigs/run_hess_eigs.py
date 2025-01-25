@@ -10,7 +10,7 @@ import tqdm
 
 from hess_vec_prod import min_max_hessian_eigs
 from swag import models, data
-
+device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 parser = argparse.ArgumentParser(description="SGD/SWA training")
 parser.add_argument("--file", type=str, default=None, required=True, help="checkpoint")
 
@@ -87,7 +87,7 @@ loaders, num_classes = data.loaders(
 )
 
 model = model_cfg.base(*model_cfg.args, num_classes=num_classes, **model_cfg.kwargs)
-model.cuda()
+model.to(device)
 
 print("Loading model %s" % args.file)
 checkpoint = torch.load(args.file)
