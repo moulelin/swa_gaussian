@@ -315,7 +315,7 @@ for epoch in range(start_epoch, args.epochs):
     time_ep = time.time()
 
     if not args.no_schedule:
-        lr = schedule2(epoch)
+        lr = schedule(epoch)
         utils.adjust_learning_rate(optimizer, lr)
     else:
         lr = args.lr_init
@@ -415,7 +415,7 @@ for epoch in range(start_epoch, args.epochs):
         table = "\n".join([table[1]] + table)
     else:
         table = table.split("\n")[2]
-    with open("training_log_300.txt", "a") as f:
+    with open("training_log_300_2.txt", "a") as f:
         f.write(table + "\n")
     print(table)
 
